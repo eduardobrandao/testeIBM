@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import ComprasService from "../service/ComprasService";
-import { parse } from "path";
 
 export default class ComprasController {
   public async listaCompras(request: Request, response: Response) {
