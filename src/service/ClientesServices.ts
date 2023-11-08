@@ -49,7 +49,6 @@ export default class ClienteService {
       for (const cliente of clientes) {
         let maxQuantity = 0;
         let wineName = "";
-
         for (const compra of cliente.compras_vinho) {
           if (compra.quantidade > maxQuantity) {
             maxQuantity = compra.quantidade;
