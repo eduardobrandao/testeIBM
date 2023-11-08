@@ -1,7 +1,9 @@
-export default interface Cliente {
+export default interface ICliente {
   nome: string;
   cpf: string;
   telefone: string;
-  tipoVinhoPreferido: string;
-  quantidadeComprada: number;
+  compras_vinho: {
+    tipo: string;
+    quantidade: number;
+  }[];
 }

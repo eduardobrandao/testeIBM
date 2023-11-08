@@ -4,14 +4,15 @@ import IRecomendacaoCliente from "../model/IRecomendacaoCliente";
 
 export default class ClienteService {
   public async findAllClientes(): Promise<ICliente[]> {
-    const response = await Api.get("/07acae80-d898-4136-a803-4adc1a3131eb");
+    const response = await Api.get("/e55a624b-0588-4e7a-a869-e4ed921e35ea");
 
     return response.data;
   }
 
   public async findByClientes(): Promise<ICliente[]> {
-    const response = await Api.get("/07acae80-d898-4136-a803-4adc1a3131eb");
+    const response = await Api.get("/e55a624b-0588-4e7a-a869-e4ed921e35ea");
     const clientes = response.data as ICliente[];
+
     const gruposDeClientes = clientes.reduce((grupos, cliente) => {
       if (!grupos[cliente.cpf]) {
         grupos[cliente.cpf] = {
@@ -19,7 +20,11 @@ export default class ClienteService {
           totalCompras: 0,
         };
       }
-      grupos[cliente.cpf].totalCompras += cliente.quantidadeComprada;
+
+      cliente.compras_vinho.forEach((compra) => {
+        grupos[cliente.cpf].totalCompras += compra.quantidade;
+      });
+
       return grupos;
     }, {} as Record<string, { cliente: ICliente; totalCompras: number }>);
 
@@ -35,14 +40,35 @@ export default class ClienteService {
   }
 
   public async recomendacaoClientes(): Promise<IRecomendacaoCliente[]> {
+    const recomendacoes: IRecomendacaoCliente[] = [];
+
     try {
-      const response = await Api.get("/07acae80-d898-4136-a803-4adc1a3131eb");
-      const data = response.data.map((m) => ({
-        mensagem: ` Olá caro cliente ${m.nome}, depois de analisamos seu histórico de pedidos recomendamos ${m.tipo_vinho_preferido}.`,
-      })) as IRecomendacaoCliente[];
-      return data;
+      const response = await Api.get("/e55a624b-0588-4e7a-a869-e4ed921e35ea");
+      const clientes: ICliente[] = response.data;
+
+      for (const cliente of clientes) {
+        let maxQuantity = 0;
+        let wineName = "";
+
+        for (const compra of cliente.compras_vinho) {
+          if (compra.quantidade > maxQuantity) {
+            maxQuantity = compra.quantidade;
+            wineName = compra.tipo;
+          }
+        }
+
+        if (wineName) {
+          const recomendacao: IRecomendacaoCliente = {
+            mensagem: `Olá caro cliente ${cliente.nome} baseado em suas ultimas compras, recomendamos um vinho ${wineName} `,
+          };
+          recomendacoes.push(recomendacao);
+        }
+      }
+
+      return recomendacoes;
     } catch (error) {
-      throw new Error("Erro ao buscar recomendações de clientes.");
+      console.error("Erro ao buscar os dados:", error);
+      return recomendacoes;
     }
   }
 }
